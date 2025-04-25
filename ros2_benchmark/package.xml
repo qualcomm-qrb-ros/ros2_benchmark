@@ -32,7 +32,6 @@ SPDX-License-Identifier: Apache-2.0
   <author>Yuankun Zhu</author>
 
   <buildtool_depend>ament_cmake_auto</buildtool_depend>
-  <build_depend>isaac_ros_common</build_depend>
 
   <depend>rclcpp</depend>
   <depend>rclcpp_action</depend>
