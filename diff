@@ -1,0 +1,143 @@
+diff --git a/ros2_benchmark/CMakeLists.txt b/ros2_benchmark/CMakeLists.txt
+index ea05db8..cb59366 100644
+--- a/ros2_benchmark/CMakeLists.txt
++++ b/ros2_benchmark/CMakeLists.txt
+@@ -101,8 +101,8 @@ endif()
+ 
+ 
+ # Embed versioning information into installed files
+-ament_index_get_resource(ISAAC_ROS_COMMON_CMAKE_PATH isaac_ros_common_cmake_path isaac_ros_common)
+-include("${ISAAC_ROS_COMMON_CMAKE_PATH}/isaac_ros_common-version-info.cmake")
+-generate_version_info(${PROJECT_NAME})
++#ament_index_get_resource(ISAAC_ROS_COMMON_CMAKE_PATH isaac_ros_common_cmake_path isaac_ros_common)
++#include("${ISAAC_ROS_COMMON_CMAKE_PATH}/isaac_ros_common-version-info.cmake")
++#generate_version_info(${PROJECT_NAME})
+ 
+ ament_auto_package(INSTALL_TO_SHARE ../scripts)
+diff --git a/ros2_benchmark/include/ros2_benchmark/data_loader_node.hpp b/ros2_benchmark/include/ros2_benchmark/data_loader_node.hpp
+index da8d8c4..6f60580 100644
+--- a/ros2_benchmark/include/ros2_benchmark/data_loader_node.hpp
++++ b/ros2_benchmark/include/ros2_benchmark/data_loader_node.hpp
+@@ -32,7 +32,7 @@
+ #include "rosbag2_compression_zstd/zstd_decompressor.hpp"
+ #include "rosbag2_cpp/typesupport_helpers.hpp"
+ #include "rosbag2_cpp/readers/sequential_reader.hpp"
+-#include "rosbag2_cpp/storage_options.hpp"
++#include "rosbag2_storage/storage_options.hpp"
+ #include "rosbag2_cpp/converter_options.hpp"
+ 
+ #include "std_msgs/msg/header.hpp"
+diff --git a/ros2_benchmark/package.xml b/ros2_benchmark/package.xml
+index 4ab91a0..c13b7ee 100644
+--- a/ros2_benchmark/package.xml
++++ b/ros2_benchmark/package.xml
+@@ -32,7 +32,6 @@ SPDX-License-Identifier: Apache-2.0
+   <author>Yuankun Zhu</author>
+ 
+   <buildtool_depend>ament_cmake_auto</buildtool_depend>
+-  <build_depend>isaac_ros_common</build_depend>
+ 
+   <depend>rclcpp</depend>
+   <depend>rclcpp_action</depend>
+diff --git a/ros2_benchmark/src/data_loader_node.cpp b/ros2_benchmark/src/data_loader_node.cpp
+index eae4782..5cb368e 100644
+--- a/ros2_benchmark/src/data_loader_node.cpp
++++ b/ros2_benchmark/src/data_loader_node.cpp
+@@ -139,20 +139,20 @@ void DataLoaderNode::SetDataServiceCallback(
+     // Update the first timestamp value if needed
+     if (first_message) {
+       first_message = false;
+-      first_timestamp_ns_ = message->time_stamp;
+-      last_timestamp_ns_ = message->time_stamp;
++      first_timestamp_ns_ = message->recv_timestamp;
++      last_timestamp_ns_ = message->recv_timestamp;
+     } else {
+-      if (message->time_stamp < first_timestamp_ns_) {
+-        first_timestamp_ns_ = message->time_stamp;
++      if (message->recv_timestamp < first_timestamp_ns_) {
++        first_timestamp_ns_ = message->recv_timestamp;
+       }
+-      if (message->time_stamp > last_timestamp_ns_) {
+-        last_timestamp_ns_ = message->time_stamp;
++      if (message->recv_timestamp > last_timestamp_ns_) {
++        last_timestamp_ns_ = message->recv_timestamp;
+       }
+     }
+ 
+     // Store the message's rosbag-recorded timestamp
+     const std::string remapped_topic_name = publishers_[message->topic_name]->get_topic_name();
+-    topic_message_timestamps_[remapped_topic_name].push_back(message->time_stamp);
++    topic_message_timestamps_[remapped_topic_name].push_back(message->recv_timestamp);
+ 
+     // Publish TF messages if required
+     if ((request->publish_tf_messages && message->topic_name == "/tf") ||
+@@ -232,8 +232,8 @@ void DataLoaderNode::StartLoadingServiceCallback(
+       return;
+     }
+ 
+-    if ((message->time_stamp < true_start_time_ns) ||
+-      (message->time_stamp > true_end_time_ns))
++    if ((message->recv_timestamp < true_start_time_ns) ||
++      (message->recv_timestamp > true_end_time_ns))
+     {
+       continue;
+     }
+@@ -242,7 +242,7 @@ void DataLoaderNode::StartLoadingServiceCallback(
+       while (true) {
+         rclcpp::Time now = this->get_clock()->now();
+         int64_t diff_to_next_timestamp =
+-          (message->time_stamp + timestamp_offset) - now.nanoseconds();
++          (message->recv_timestamp + timestamp_offset) - now.nanoseconds();
+         if (diff_to_next_timestamp <= 0) {
+           break;
+         }
+diff --git a/ros2_benchmark/src/monitor_node.cpp b/ros2_benchmark/src/monitor_node.cpp
+index f4aa110..997afb0 100644
+--- a/ros2_benchmark/src/monitor_node.cpp
++++ b/ros2_benchmark/src/monitor_node.cpp
+@@ -36,7 +36,7 @@ MonitorNode::MonitorNode(
+         this,
+         std::placeholders::_1,
+         std::placeholders::_2),
+-      rmw_qos_profile_default,
++      rclcpp::QoS(rclcpp::ServicesQoS()),
+       service_callback_group_)},
+   stop_monitoring_service_{
+     create_service<ros2_benchmark_interfaces::srv::StopMonitoring>(
+@@ -46,7 +46,7 @@ MonitorNode::MonitorNode(
+         this,
+         std::placeholders::_1,
+         std::placeholders::_2),
+-      rmw_qos_profile_default,
++      rclcpp::QoS(rclcpp::ServicesQoS()),
+       service_callback_group_)}
+ {
+ }
+diff --git a/ros2_benchmark_interfaces/CMakeLists.txt b/ros2_benchmark_interfaces/CMakeLists.txt
+index 5865c8d..bf79c9f 100644
+--- a/ros2_benchmark_interfaces/CMakeLists.txt
++++ b/ros2_benchmark_interfaces/CMakeLists.txt
+@@ -69,8 +69,8 @@ endif()
+ 
+ 
+ # Embed versioning information into installed files
+-ament_index_get_resource(ISAAC_ROS_COMMON_CMAKE_PATH isaac_ros_common_cmake_path isaac_ros_common)
+-include("${ISAAC_ROS_COMMON_CMAKE_PATH}/isaac_ros_common-version-info.cmake")
+-generate_version_info(${PROJECT_NAME})
++#ament_index_get_resource(ISAAC_ROS_COMMON_CMAKE_PATH isaac_ros_common_cmake_path isaac_ros_common)
++#include("${ISAAC_ROS_COMMON_CMAKE_PATH}/isaac_ros_common-version-info.cmake")
++#generate_version_info(${PROJECT_NAME})
+ 
+ ament_auto_package()
+diff --git a/ros2_benchmark_interfaces/package.xml b/ros2_benchmark_interfaces/package.xml
+index 26be92a..cf3fb57 100644
+--- a/ros2_benchmark_interfaces/package.xml
++++ b/ros2_benchmark_interfaces/package.xml
+@@ -32,7 +32,6 @@ SPDX-License-Identifier: Apache-2.0
+   <author>Yuankun Zhu</author>
+ 
+   <build_depend>rosidl_default_generators</build_depend>
+-  <build_depend>isaac_ros_common</build_depend>
+   <exec_depend>rosidl_default_runtime</exec_depend>
+ 
+   <test_depend>ament_lint_auto</test_depend>
