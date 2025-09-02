@@ -105,4 +105,4 @@ endif()
 #include("${ISAAC_ROS_COMMON_CMAKE_PATH}/isaac_ros_common-version-info.cmake")
 #generate_version_info(${PROJECT_NAME})
 
-ament_auto_package(INSTALL_TO_SHARE ../scripts)
+ament_auto_package(INSTALL_TO_SHARE ./scripts)

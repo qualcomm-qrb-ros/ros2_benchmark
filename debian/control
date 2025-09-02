@@ -1,0 +1,12 @@
+Source: ros-jazzy-ros2-benchmark
+Section: misc
+Priority: optional
+Maintainer: Isaac ROS Maintainers <isaac-ros-maintainers@nvidia.com>
+Build-Depends: debhelper-compat(=13), ros-jazzy-ament-cmake-auto, ros-jazzy-ament-lint-auto <!nocheck>, ros-jazzy-ament-lint-common <!nocheck>, ros-jazzy-rclcpp, ros-jazzy-rclcpp-action, ros-jazzy-rclcpp-components, ros-jazzy-ros2-benchmark-interfaces, ros-jazzy-rosbag2-compression-zstd, ros-jazzy-rosbag2-cpp, ros-jazzy-rosbag2-py, ros-jazzy-std-msgs
+Homepage: https://developer.nvidia.com/isaac-ros-gems/
+Standards-Version: 3.9.2
+
+Package: ros-jazzy-ros2-benchmark
+Architecture: any
+Depends: ${shlibs:Depends}, ${misc:Depends}, ros-jazzy-rclcpp, ros-jazzy-rclcpp-action, ros-jazzy-rclcpp-components, ros-jazzy-ros2-benchmark-interfaces, ros-jazzy-rosbag2-compression-zstd, ros-jazzy-rosbag2-cpp, ros-jazzy-rosbag2-py, ros-jazzy-std-msgs
+Description: Benchmarking framework for ROS 2 graphs
