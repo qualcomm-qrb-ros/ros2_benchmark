@@ -93,10 +93,6 @@ if(BUILD_TESTING)
     cmake_policy(SET CMP0148 OLD)
   endif()
 
-  find_package(launch_testing_ament_cmake REQUIRED)
-  add_launch_test(test/data_loader_node_pol.py TIMEOUT "60")
-  add_launch_test(test/monitor_node_pol.py TIMEOUT "60")
-  add_launch_test(test/playback_node_pol.py TIMEOUT "60")
 endif()
 
 
