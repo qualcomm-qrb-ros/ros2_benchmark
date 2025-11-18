@@ -1,0 +1,12 @@
+Source: ros-jazzy-ros2-benchmark-interfaces
+Section: misc
+Priority: optional
+Maintainer: Isaac ROS Maintainers <isaac-ros-maintainers@nvidia.com>
+Build-Depends: debhelper-compat(=13), ros-jazzy-ament-lint-auto <!nocheck>, ros-jazzy-ament-lint-common <!nocheck>, ros-jazzy-rosidl-default-generators
+Homepage: https://developer.nvidia.com/isaac-ros-gems/
+Standards-Version: 3.9.2
+
+Package: ros-jazzy-ros2-benchmark-interfaces
+Architecture: any
+Depends: ${shlibs:Depends}, ${misc:Depends}, ros-jazzy-rosidl-default-runtime
+Description: Interfaces for benchmark testing
